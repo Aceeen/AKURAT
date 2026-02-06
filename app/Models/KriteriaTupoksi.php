@@ -17,14 +17,20 @@ class KriteriaTupoksi extends Model
     }
 
     // Relasi ke berkas yang diupload pegawai
-    public function berkasKinerja()
+    /*public function berkasKinerja()
     {
         return $this->hasMany(BerkasKinerja::class, 'kriteria_id');
-    }
+    }*/
 
     // Query Scope untuk memfilter triwulan (seperti langkah sebelumnya)
     public function scopeAktifTriwulan($query, $triwulan)
     {
         return $query->where('t' . $triwulan, true);
+    }
+    
+    public function penilaian()
+    {
+        // Kriteria punya banyak penilaian (T1, T2, T3, T4)
+        return $this->hasMany(Penilaian::class, 'kriteria_id');
     }
 }

@@ -47,7 +47,10 @@ class KinerjaController extends Controller
      */
     public function detailPegawai($id)
     {
-        $pegawai = User::with(['tupoksis.kriteria.berkasKinerja.penilaian'])->findOrFail($id);
+        $pegawai = User::with([
+            'tupoksis.berkasKinerja', 
+            'tupoksis.kriteria.penilaian'
+        ])->findOrFail($id);
         // security check
         if (auth()->user()->role !== 'kadis' && $pegawai->parent_id !== auth()->id()) {
             abort(403, 'Anda tidak memiliki akses ke data pegawai ini.');
@@ -118,68 +121,55 @@ class KinerjaController extends Controller
      */
     public function simpanPenilaian(Request $request)
     {
+        // 1. Validasi Input
         $request->validate([
             'kriteria_id' => 'required|exists:kriteria_tupoksi,id',
-            'pegawai_id' => 'required|exists:users,id',
-            'skor' => 'required|in:0,1,2,3',
+            'pegawai_id'  => 'required|exists:users,id',
+            'skor'        => 'required|in:0,1,2,3',
         ]);
 
-        $triwulanAktif = DB::table('settings')->where('key', 'triwulan_aktif')->value('value');
-        $tahunAktif = DB::table('settings')->where('key', 'tahun_aktif')->value('value');
+        // 2. Ambil Global Settings (Konsisten & Fleksibel)
+        $triwulanAktif = DB::table('settings')->where('key', 'triwulan_aktif')->value('value') ?? 1;
+        $tahunAktif    = DB::table('settings')->where('key', 'tahun_aktif')->value('value') ?? date('Y');
 
         DB::beginTransaction();
         try {
-
-            // 1. Cek apakah ada berkas atau tidak
-            $berkas = BerkasKinerja::where('kriteria_id', $request->kriteria_id)
-                    ->where('user_id', $request->pegawai_id)
-                    ->where('triwulan', $triwulanAktif)
-                    ->first();
-
-            // 2. Kalau belum ada, set placeholder
-            if (!$berkas) {
-                $berkas = BerkasKinerja::create([
-                    'user_id' => $request->pegawai_id,
-                    'kriteria_id' => $request->kriteria_id,
-                    'triwulan' => $triwulanAktif,
-                    'tahun' => $tahunAktif,
-                    'file_path' => '-', // Placeholder karena tidak ada file
-                    'status_penilaian' => 'belum'
-                ]);
-            }
-
-            // 3. Simpan penilaian
-            Penilaian::updateOrCreate(
-                ['berkas_id' => $berkas->id],
+            /**
+             * LOGIKA: Penilaian kini tidak lagi mencari berkas_id.
+             * Atasan menilai KRITERIA tertentu milik PEGAWAI tertentu pada PERIODE tertentu.
+             * Ini memungkinkan penilaian dilakukan kapan saja meskipun file belum diunggah.
+             */
+            $penilaian = Penilaian::updateOrCreate(
                 [
-                    'penilai_id' => auth()->id(),
-                    'skor' => $request->skor,
+                    'kriteria_id' => $request->kriteria_id,
+                    'user_id'     => $request->pegawai_id,
+                    'triwulan'    => $triwulanAktif,
+                    'tahun'       => $tahunAktif, // Tambahkan tahun agar data antar tahun tidak bertabrakan
+                ],
+                [
+                    'penilai_id'     => auth()->id(),
+                    'skor'           => $request->skor,
                     'catatan_atasan' => $request->catatan_atasan
                 ]
             );
 
-            // 4. Update status berkas jadi sudah dinilai
-            $berkas->update(['status_penilaian' => 'sudah']);
-
-            // 5. Simpan Log
+            // 3. Catat Log Aktivitas (Sesuai Kriteria Dokumen Hal 4)
             ActivityLog::create([
-                'user_id' => auth()->id(),
-                'action' => 'UPDATE_NILAI',
-                'subject_table' => 'penilaian', 
-                'subject_id' => $berkas->id,
-                'description' => "Atasan memberikan skor {$request->skor} pada berkas ID: {$request->kriteria_id}",
-                'ip_address' => $request->ip()
+                'user_id'       => auth()->id(),
+                'action'        => 'GIVE_SCORE',
+                'subject_table' => 'penilaian',
+                'subject_id'    => $penilaian->id,
+                'description'   => "Memberikan skor {$request->skor} pada Kriteria ID: {$request->kriteria_id} (Pegawai ID: {$request->pegawai_id})",
+                'ip_address'    => $request->ip()
             ]);
 
             DB::commit();
-
             return back()->with('success', 'Penilaian berhasil disimpan.');
+            
         } catch (\Exception $e) {
             DB::rollBack();
-
-            \Log::error("Error simpanPenilaian: " . $e->getMessage());
-
-            return back()->with('error', 'Terjadi kesalahan saat menyimpan penilaian. Silakan coba lagi.');
+            Log::error("Error simpanPenilaian: " . $e->getMessage());
+            return back()->with('error', 'Gagal menyimpan penilaian. Silakan hubungi admin.');
         }
     }
 
@@ -189,10 +179,11 @@ class KinerjaController extends Controller
         // Middleware CheckQuarterLock akan memproses ini dulu
         
         $request->validate([
-            'kriteria_id' => 'required|exists:kriteria_tupoksi,id',
-            'triwulan' => 'required|in:1,2,3,4',
+            'tupoksi_id' => 'required|exists:tupoksi,id',
+            'triwulan'   => 'required|in:1,2,3,4', // Pastikan triwulan valid
             'file_bukti' => 'required|mimes:pdf,jpg,png|max:5120',
         ]);
+
         
         DB::beginTransaction();
         try {
@@ -204,7 +195,7 @@ class KinerjaController extends Controller
             $path = $file->storeAs($folder, $filename, 'public');
             $berkas = BerkasKinerja::create([
                 'user_id' => auth()->id(),
-                'kriteria_id' => $request->kriteria_id,
+                'tupoksi_id' => $request->tupoksi_id,
                 'triwulan' => $request->triwulan,
                 'tahun' => $tahun,
                 'file_path' => $path,
@@ -217,7 +208,7 @@ class KinerjaController extends Controller
                 'action' => 'UPLOAD_BERKAS',
                 'subject_table' => 'berkas_kinerjas',
                 'subject_id' => $berkas->id,
-                'description' => "Staff mengunggah berkas bukti untuk kriteria ID: {$request->kriteria_id}",
+                'description' => "Staff mengunggah berkas bukti untuk Tupoksi ID: {$request->tupoksi_id}",
                 'ip_address' => $request->ip()
             ]);
 
@@ -288,31 +279,30 @@ class KinerjaController extends Controller
             abort(403);
         }
 
-        $kriteria = KriteriaTupoksi::with('berkasKinerja')->findOrFail($id);
-
-        // Aturan: Jangan hapus jika sudah ada staff yang upload berkas di kriteria ini
-        if ($kriteria->berkasKinerja->count() > 0) {
-            return back()->with('error', 'Kriteria tidak bisa dihapus karena sudah ada pegawai yang mengunggah berkas di poin ini.');
-        }
+        $kriteria = KriteriaTupoksi::findOrFail($id);
 
         DB::beginTransaction();
         try {
             $namaKriteria = $kriteria->nama_kriteria;
-            $kriteriaId = $kriteria->id;
+
+            // 1. Hapus semua penilaian yang terikat ke kriteria ini (Clean up)
+            Penilaian::where('kriteria_id', $id)->delete();
+
+            // 2. Hapus Kriteria
             $kriteria->delete();
 
-            // --- TAMBAHKAN LOG ---
+            // 3. Simpan Log dengan deskripsi bahaya
             ActivityLog::create([
                 'user_id' => auth()->id(),
-                'action' => 'DELETE_KRITERIA',
-                'subject_table' => 'kriteria_tupoksis',
-                'subject_id' => $kriteriaId,
-                'description' => "Kadis menghapus kriteria: $namaKriteria",
+                'action' => 'HARD_DELETE_KRITERIA',
+                'subject_table' => 'kriteria_tupoksi',
+                'subject_id' => $id,
+                'description' => "Kadis menghapus PERMANEN kriteria: '$namaKriteria' beserta seluruh riwayat nilai di dalamnya.",
                 'ip_address' => request()->ip()
             ]);
 
             DB::commit();
-            return back()->with('success', 'Kriteria berhasil dihapus.');
+            return back()->with('success', 'Kriteria dan seluruh data nilai terkait berhasil dihapus permanen.');
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error("Error hapusKriteria: " . $e->getMessage());
@@ -430,10 +420,11 @@ class KinerjaController extends Controller
         $triwulanAktif = DB::table('settings')->where('key', 'triwulan_aktif')->value('value') ?? 1;
         $tahunAktif = DB::table('settings')->where('key', 'tahun_aktif')->value('value') ?? date('Y');
 
-        // Ambil Tupoksi dan Berkas yang sudah diunggah untuk tupoksi tersebut
+        // Mengambil Tupoksi beserta Kriteria dan Berkas yang terikat pada Tupoksi tersebut
         $tupoksis = Tupoksi::with(['kriteria' => function($q) use ($triwulanAktif) {
             $q->where('t'.$triwulanAktif, true);
         }, 'berkasKinerja' => function($q) use ($user, $triwulanAktif) {
+            // Relasi berkas sekarang ke tupoksi_id (hasil migrasi terbaru)
             $q->where('user_id', $user->id)->where('triwulan', $triwulanAktif);
         }])
         ->where('user_id', $user->id)
@@ -442,4 +433,6 @@ class KinerjaController extends Controller
 
         return view('kinerja.index', compact('tupoksis', 'triwulanAktif', 'tahunAktif'));
     }
+
+    
 }

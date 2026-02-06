@@ -22,6 +22,11 @@ class BerkasKinerja extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function tupoksi()
+    {
+        return $this->belongsTo(Tupoksi::class, 'tupoksi_id');
+    }
+/*
     public function kriteria()
     {
         return $this->belongsTo(KriteriaTupoksi::class, 'kriteria_id');
@@ -50,4 +55,5 @@ class BerkasKinerja extends Model
         // Menggunakan Null Safe Operator (?->) Laravel untuk menghindari error jika belum dinilai
         return $this->penilai?->nama ?? 'Belum Dinilai';
     }
+        */
 }

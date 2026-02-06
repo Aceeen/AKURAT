@@ -11,7 +11,8 @@ class Penilaian extends Model
     protected $fillable = [
         'kriteria_id',
         'user_id',   
-        'triwulan',  
+        'triwulan',
+        'tahun',  
         'penilai_id',
         'skor',
         'catatan_atasan'

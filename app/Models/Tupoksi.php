@@ -10,15 +10,19 @@ class Tupoksi extends Model
 
     protected $fillable = ['user_id', 'nama_tupoksi', 'tahun'];
 
-    // Relasi ke User (Pemilik Tupoksi)
-    public function user()
+    // TAMBAHKAN INI:
+    public function berkasKinerja()
     {
-        return $this->belongsTo(User::class);
+        return $this->hasMany(BerkasKinerja::class, 'tupoksi_id');
     }
 
-    // Relasi ke Kriteria (Rincian Penilaian)
     public function kriteria()
     {
         return $this->hasMany(KriteriaTupoksi::class, 'tupoksi_id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }
