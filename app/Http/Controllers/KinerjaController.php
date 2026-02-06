@@ -119,15 +119,38 @@ class KinerjaController extends Controller
     public function simpanPenilaian(Request $request)
     {
         $request->validate([
-            'berkas_id' => 'required|exists:berkas_kinerja,id',
+            'kriteria_id' => 'required|exists:kriteria_tupoksi,id',
+            'pegawai_id' => 'required|exists:users,id',
             'skor' => 'required|in:0,1,2,3',
         ]);
 
+        $triwulanAktif = DB::table('settings')->where('key', 'triwulan_aktif')->value('value');
+        $tahunAktif = DB::table('settings')->where('key', 'tahun_aktif')->value('value');
+
         DB::beginTransaction();
         try {
-            // 1. Simpan penilaian
+
+            // 1. Cek apakah ada berkas atau tidak
+            $berkas = BerkasKinerja::where('kriteria_id', $request->kriteria_id)
+                    ->where('user_id', $request->pegawai_id)
+                    ->where('triwulan', $triwulanAktif)
+                    ->first();
+
+            // 2. Kalau belum ada, set placeholder
+            if (!$berkas) {
+                $berkas = BerkasKinerja::create([
+                    'user_id' => $request->pegawai_id,
+                    'kriteria_id' => $request->kriteria_id,
+                    'triwulan' => $triwulanAktif,
+                    'tahun' => $tahunAktif,
+                    'file_path' => '-', // Placeholder karena tidak ada file
+                    'status_penilaian' => 'belum'
+                ]);
+            }
+
+            // 3. Simpan penilaian
             Penilaian::updateOrCreate(
-                ['berkas_id' => $request->berkas_id],
+                ['berkas_id' => $berkas->id],
                 [
                     'penilai_id' => auth()->id(),
                     'skor' => $request->skor,
@@ -135,16 +158,16 @@ class KinerjaController extends Controller
                 ]
             );
 
-            // 2. Update status di tabel berkas
-            BerkasKinerja::where('id', $request->berkas_id)->update(['status_penilaian' => 'sudah']);
+            // 4. Update status berkas jadi sudah dinilai
+            $berkas->update(['status_penilaian' => 'sudah']);
 
-            // 3. Simpan Log
+            // 5. Simpan Log
             ActivityLog::create([
                 'user_id' => auth()->id(),
                 'action' => 'UPDATE_NILAI',
-                'subject_table' => 'penilaian',
-                'subject_id' => $request->berkas_id,
-                'description' => "Atasan memberikan skor {$request->skor} pada berkas ID: {$request->berkas_id}",
+                'subject_table' => 'penilaian', 
+                'subject_id' => $berkas->id,
+                'description' => "Atasan memberikan skor {$request->skor} pada berkas ID: {$request->kriteria_id}",
                 'ip_address' => $request->ip()
             ]);
 
@@ -378,5 +401,25 @@ class KinerjaController extends Controller
             \Log::error("Error updateKriteria: " . $e->getMessage());
             return back()->with('error', 'Gagal memperbarui kriteria.');
         }
+    }
+
+    // app/Http/Controllers/KinerjaController.php
+
+    public function storeTupoksi(Request $request)
+    {
+        // Pastikan hanya Kadin yang bisa menambah butir Tupoksi
+        if (auth()->user()->role !== 'kadis') {
+            abort(403);
+        }
+
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'nama_tupoksi' => 'required|string',
+            'tahun' => 'required|numeric',
+        ]);
+
+        Tupoksi::create($request->all());
+
+        return back()->with('success', 'Butir Tupoksi berhasil ditambahkan.');
     }
 }

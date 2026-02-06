@@ -1,38 +1,68 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="glass overflow-hidden text-white">
-    <div class="p-6 border-b border-white/10 bg-white/5 flex justify-between items-center">
-        <h2 class="text-xl font-bold">Daftar Penilaian Pegawai</h2>
-        <div class="text-sm text-white/60">Klik detail untuk mengelola kriteria atau menilai</div>
+<div class="container-fluid text-white">
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold">Penilaian & Kriteria</h1>
+            <p class="text-blue-200 text-sm">Daftar bawahan yang perlu dikelola kriteria dan penilaiannya.</p>
+        </div>
+        <div class="glass px-4 py-2">
+            <span class="text-xs font-bold uppercase tracking-widest text-blue-100">
+                Total Bawahan: {{ $pegawai->count() }}
+            </span>
+        </div>
     </div>
-    
-    <table class="w-full text-sm text-left">
-        <thead class="bg-white/10 text-xs uppercase text-white/50">
-            <tr>
-                <th class="px-6 py-4">Nama / NIP</th>
-                <th class="px-6 py-4">Jabatan</th>
-                <th class="px-6 py-4">Unit Kerja</th>
-                <th class="px-6 py-4 text-center">Aksi</th>
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-white/10">
-            @foreach($pegawai as $p)
-            <tr class="hover:bg-white/5 transition">
-                <td class="px-6 py-4">
-                    <div class="font-bold">{{ $p->nama }}</div>
-                    <div class="text-[10px] text-white/50">{{ $p->nip }}</div>
-                </td>
-                <td class="px-6 py-4 text-white/80">{{ $p->jabatan }}</td>
-                <td class="px-6 py-4 text-white/80">{{ $p->unitKerja->nama_unit ?? '-' }}</td>
-                <td class="px-6 py-4 text-center">
-                    <a href="{{ route('penilaian.detail', $p->id) }}" class="bg-white text-red-700 px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-red-50 transition shadow-lg">
-                        <i class="fas fa-search-plus mr-1"></i> Detail & Nilai
-                    </a>
-                </td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
+
+    <!-- Tabel Daftar Bawahan -->
+    <div class="glass overflow-hidden">
+        <table class="w-full text-sm">
+            <thead class="bg-white/10 text-[10px] uppercase tracking-wider text-blue-100 border-b border-white/20">
+                <tr>
+                    <th class="px-6 py-4 text-left">Pegawai</th>
+                    <th class="px-6 py-4 text-left">Jabatan</th>
+                    <th class="px-6 py-4 text-center">Unit Kerja</th>
+                    <th class="px-6 py-4 text-center">Progres Triwulan Ini</th>
+                    <th class="px-6 py-4 text-right">Aksi</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-white/10">
+                @foreach($pegawai as $p)
+                <tr class="hover:bg-white/10 transition">
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                            <img src="https://ui-avatars.com/api/?name={{ urlencode($p->nama) }}&background=3b82f6&color=fff" class="w-10 h-10 rounded-full border-2 border-blue-300/50">
+                            <div>
+                                <div class="font-bold text-white">{{ $p->nama }}</div>
+                                <div class="text-[10px] text-blue-300">NIP. {{ $p->nip }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 text-blue-100 text-xs">
+                        {{ $p->jabatan }}<br>
+                        <span class="text-[10px] opacity-60">Gol. {{ $p->golongan }}</span>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <span class="px-3 py-1 bg-blue-500/20 text-blue-200 rounded-full text-[10px] font-bold border border-blue-400/30">
+                            {{ $p->unitKerja->nama_unit ?? '-' }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        {{-- Logika Progress Sederhana --}}
+                        <div class="w-full bg-white/10 rounded-full h-1.5 mb-1">
+                            <div class="bg-blue-400 h-1.5 rounded-full" style="width: 45%"></div>
+                        </div>
+                        <span class="text-[9px] text-blue-200 font-bold uppercase">Menunggu Penilaian</span>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <a href="{{ route('penilaian.detail', $p->id) }}" class="btn-primary px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition">
+                            Detail & Nilai <i class="fas fa-chevron-right ml-1"></i>
+                        </a>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
 </div>
 @endsection

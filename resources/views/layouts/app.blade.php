@@ -17,28 +17,94 @@
         <style>
             body {
                 font-family: 'Inter', sans-serif;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #3b82f6 100%);
                 background-attachment: fixed;
                 min-height: 100vh;
                 color: white;
             }
 
             .glass {
-                background: rgba(255, 255, 255, 0.2);
-                backdrop-filter: blur(15px);
-                -webkit-backdrop-filter: blur(15px);
-                border: 1px solid rgba(255, 255, 255, 0.3);
-                border-radius: 15px;
+                background: rgba(255, 255, 255, 0.12);
+                backdrop-filter: blur(25px);
+                -webkit-backdrop-filter: blur(25px);
+                border: 1.5px solid rgba(255, 255, 255, 0.3);
+                border-radius: 16px;
+                box-shadow: 
+                    0 8px 32px rgba(0, 0, 0, 0.2),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            }
+
+            .glass-strong {
+                background: rgba(255, 255, 255, 0.15);
+                backdrop-filter: blur(30px);
+                -webkit-backdrop-filter: blur(30px);
+                border: 2px solid rgba(255, 255, 255, 0.35);
+                border-radius: 18px;
+                box-shadow: 
+                    0 10px 40px rgba(0, 0, 0, 0.25),
+                    inset 0 2px 0 rgba(255, 255, 255, 0.5),
+                    inset 0 -2px 0 rgba(0, 0, 0, 0.1);
+                position: relative;
+                overflow: hidden;
             }
 
             aside {
-                background: rgba(15, 23, 42, 0.9) !important; 
+                background: linear-gradient(180deg, #1e3a8a 0%, #0f172a 100%) !important;
+                box-shadow: 4px 0 20px rgba(0,0,0,0.3);
             }
 
             .sidebar-item-active {
-                background: rgba(59, 130, 246, 0.8);
+                background: linear-gradient(90deg, rgba(59, 130, 246, 0.4) 0%, rgba(96, 165, 250, 0.6) 100%);
                 border-radius: 0 25px 25px 0;
                 color: white !important;
+                border-left: 4px solid #60a5fa;
+                box-shadow: 0 4px 15px rgba(96, 165, 250, 0.3);
+            }
+
+            .sidebar-item-active i {
+                color: #93c5fd;
+            }
+
+            .sidebar-item:not(.sidebar-item-active):hover {
+                background: rgba(59, 130, 246, 0.15);
+                border-radius: 0 25px 25px 0;
+            }
+
+            .glass-card {
+                background: rgba(255, 255, 255, 0.1);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                border: 1.5px solid rgba(147, 197, 253, 0.25);
+                border-radius: 14px;
+                box-shadow: 
+                    0 4px 20px rgba(0, 0, 0, 0.15),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            }
+
+            .btn-primary {
+                background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+                box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+            }
+
+            .btn-primary:hover {
+                background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+                box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+            }
+
+            /* Shimmer effect untuk glass cards */
+            .glass-strong::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+                transition: left 0.5s;
+            }
+            
+            .glass-strong:hover::before {
+                left: 100%;
             }
         </style>
     </head>
@@ -46,39 +112,46 @@
     <body class="overflow-x-hidden antialiased">
     <div class="flex">
         <!-- Sidebar -->
-        <aside class="w-64 fixed h-full bg-black/20 backdrop-blur-lg border-r border-white/10">
-            <div class="p-6 text-center">
-                <!-- logo di public/img/logo-manado.png -->
-                <img src="{{ asset('img/logo-manado.webp') }}" class="w-14 mx-auto mb-3" alt="Logo">
-                <h2 class="font-bold text-[10px] uppercase tracking-widest text-white/80 leading-tight">Dinas Kesehatan<br>Kota Manado
+        <aside class="w-64 fixed h-full border-r border-blue-400/10">
+            <div class="p-6 text-center border-b border-blue-400/10">
+                <img src="{{ asset('img/logo-manado.webp') }}" class="w-16 mx-auto mb-3" alt="Logo">
+                <h2 class="font-bold text-[11px] uppercase tracking-widest text-blue-100 leading-tight">
+                    Dinas Kesehatan<br>Kota Manado
                 </h2>
             </div>
 
             <!-- Profil di sidebar -->
-            <div class="mt-4 flex items-center p-3 mx-4 glass mb-6">
-                <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name) }}" class="w-10 h-10 rounded-full border border-white/30">
-                <div class="ml-3 overflow-hidden">
-                    <p class="text-[11px] font-bold truncate">{{ auth()->user()->nama }}</p>
-                    <p class="text-[11px] text-white/70">NIP. {{ auth()->user()->nip ?? '-' }}</p>
+            <div class="mt-6 flex items-center p-4 mx-4 glass-card mb-6">
+                <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->nama ?? 'User') }}&background=3b82f6&color=fff" 
+                     class="w-11 h-11 rounded-full border-2 border-blue-300/50">
+                <div class="ml-3 overflow-hidden flex-1">
+                    <p class="text-[11px] font-bold truncate text-blue-100">{{ auth()->user()->nama ?? 'User' }}</p>
+                    <p class="text-[10px] text-blue-300">NIP {{ auth()->user()->nip ?? '-' }}</p>
                 </div>
             </div>
 
             <nav class="space-y-1 pr-4">
-                <a href="{{ route('dashboard') }}" class="flex items-center px-6 py-3 text-xs {{ request()->routeIs('dashboard') ? 'sidebar-item-active' : 'text-white/60 hover:text-white' }}">
+                <a href="{{ route('dashboard') }}" 
+                   class="sidebar-item flex items-center px-6 py-3 text-xs {{ request()->routeIs('dashboard') ? 'sidebar-item-active' : 'text-blue-200 hover:text-white' }}">
                     <i class="fas fa-th-large w-5"></i> <span class="ml-3">Dashboard</span>
                 </a>
-                <a href="{{ route('penilaian.index') }}" class="flex items-center px-6 py-3 text-xs {{ request()->routeIs('penilaian.*') ? 'sidebar-item-active' : 'text-white/60 hover:text-white' }}">
+                <a href="{{ route('penilaian.index') }}" 
+                   class="sidebar-item flex items-center px-6 py-3 text-xs {{ request()->routeIs('penilaian.*') ? 'sidebar-item-active' : 'text-blue-200 hover:text-white' }}">
                     <i class="fas fa-file-signature w-5"></i> <span class="ml-3">Penilaian & Kriteria</span>
                 </a>
 
                 <!-- Menu khusus kadis -->
-                @if(auth()->user()->role == ('kadis'))
-                <a href="#" class="flex items-center px-6 py-3 text-xs text-white/60 hover:text-white">
-                    <i class="fas fa-users w-5"></i> <span class="ml-3">Unit Kerja</span>
+                @if(auth()->user()->role == 'kadis')
+                <a href="{{ route('pegawai.index') }}" 
+                class="sidebar-item flex items-center px-6 py-3 text-xs {{ request()->routeIs('pegawai.*') ? 'sidebar-item-active' : 'text-blue-200 hover:text-white' }}">
+                    <i class="fas fa-users w-5"></i> <span class="ml-3">Data Pegawai</span>
                 </a>
                 @endif
 
-                <a href="#" class="flex items-center px-6 py-3 text-xs text-white/60 hover:text-white>
+                <a href="#" class="sidebar-item flex items-center px-6 py-3 text-xs text-blue-200 hover:text-white">
+                    <i class="fas fa-building w-5"></i> <span class="ml-3">Unit Kerja</span>
+                </a>
+                <a href="#" class="sidebar-item flex items-center px-6 py-3 text-xs text-blue-200 hover:text-white">
                     <i class="fas fa-chart-bar w-5"></i> <span class="ml-3">Laporan Kinerja</span>
                 </a>
                 </nav>
@@ -87,26 +160,30 @@
 
         <main class="flex-1 ml-64 min-h-screen">
             <!-- Header -->
-            <header class="p-4 flex justify-between items-center sticky top-0 z-50 bg-transparent">
+            <header class="p-4 flex justify-between items-center sticky top-0 z-50 bg-blue-900/30 backdrop-blur-md border-b border-blue-400/10">
                 <div class="relative w-1/3">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-white/50">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-blue-300">
                         <i class="fas fa-search text-xs"></i>
                     </span>
-                    <input type="text" class="w-full bg-white/10 border border-white/20 rounded-lg py-1.5 pl-9 pr-4 text-xs text-white placeholder-white/50 focus:outline-none focus:ring-1 focus:ring-white/30" placeholder="Cari Nama, NIP...">
+                    <input type="text" 
+                           class="w-full bg-blue-900/30 border border-blue-400/20 rounded-lg py-2 pl-9 pr-4 text-xs text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400/50" placeholder="Cari Nama, NIP...">
                 </div>
 
                 <!-- Right Header -->
                 <div class="flex items-center space-x-6">
-                    <i class="fas fa-bell text-white/50 hover:text-white cursor-pointer transition"></i>
+                    <i class="fas fa-bell text-blue-200 hover:text-white cursor-pointer transition"></i>
 
-                    <div class="flex items-center space-x-2 bg-white/10 px-3 py-1.5 rounded-lg border border-white/20">
-                        <i class="fas fa-calendar-alt text-white/40 text-xs"></i>
-                        <span class="text-[11px] font-semibold">Periode: T{{DB::table('settings')->where('key', 'triwulan_aktif')->value('value')}}</span>
+                    <div class="flex items-center space-x-2 bg-blue-900/40 px-4 py-2 rounded-lg border border-blue-400/20">
+                        <i class="fas fa-calendar-alt text-blue-300 text-xs"></i>
+                        <span class="text-[11px] font-semibold text-blue-100">
+                            Periode: T{{ DB::table('settings')->where('key', 'triwulan_aktif')->value('value') }}
+                        </span>
                     </div>
 
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button type="submit" class="bg-black/20 hover:bg-red-600/50 px-4 py-1.5 rounded-lg text-[11px] font-bold flex items-center border border-white/10 transition">
+                        <button type="submit" 
+                                class="bg-blue-900/40 hover:bg-blue-800/60 px-4 py-2 rounded-lg text-[11px] font-bold flex items-center border border-blue-400/20 transition text-blue-100">
                             <i class="fas fa-sign-out-alt mr-2"></i> Logout
                         </button>
                     </form>
@@ -116,12 +193,12 @@
             <!-- Alert Message -->
             <div class="px-8 mt-2">
                 @if(session('success'))
-                    <div class="glass bg-green-500/20 border-green-500/50 p-3 text-xs mb-4">
+                    <div class="glass-card bg-green-500/20 border-green-400/50 p-3 text-xs mb-4 text-green-100">
                         <i class="fas fa-check-circle mr-2"></i> {{ session('success') }}
                     </div>
                 @endif
                 @if(session('error'))
-                    <div class="glass bg-red-500/20 border-red-500/50 p-3 text-xs mb-4">
+                    <div class="glass-card bg-red-500/20 border-red-400/50 p-3 text-xs mb-4 text-red-100">
                         <i class="fas fa-exclamation-triangle mr-2"></i> {{ session('error') }}
                     </div>
                 @endif

@@ -3,6 +3,7 @@
 use App\Http\Controllers\KinerjaController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 // 1. Halaman Publik
@@ -45,6 +46,13 @@ Route::middleware(['auth', 'active', 'verified'])->group(function () {
 
     // --- FITUR KHUSUS KEPALA DINAS (SUPER ADMIN) ---
     Route::middleware(['role:kadis'])->group(function () {
+
+        // --- DATA PEGAWAI
+        Route::get('/pegawai', [UserController::class, 'index'])->name('pegawai.index');
+
+        // Rute Manajemen Tupoksi
+        Route::post('/tupoksi/store', [KinerjaController::class, 'storeTupoksi'])->name('tupoksi.store');
+
         Route::prefix('kriteria')->name('kriteria.')->group(function () {
             Route::post('/store', [KinerjaController::class, 'storeKriteria'])->name('store');
             Route::put('/update/{id}', [KinerjaController::class, 'updateKriteria'])->name('update');
