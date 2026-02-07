@@ -36,8 +36,20 @@
                 <label class="text-[9px] font-black uppercase text-blue-200 mb-1 block">Golongan</label>
                 <select name="golongan" class="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white">
                     <option value="">Semua Golongan</option>
-                    @foreach(['II/a','II/b','II/c','III/a','III/b','III/c','III/d','IV/a','IV/b','IV/c'] as $gol)
-                        <option value="{{ $gol }}" {{ request('golongan') == $gol ? 'selected' : '' }}>{{ $gol }}</option>
+        
+                    @php
+                        $daftarGolongan = [
+                            'I/a', 'I/b', 'I/c', 'I/d',
+                            'II/a', 'II/b', 'II/c', 'II/d',
+                            'III/a', 'III/b', 'III/c', 'III/d',
+                            'IV/a', 'IV/b', 'IV/c', 'IV/d', 'IV/e', 'PPPK / V', 'PPPK / VI', 'PPPK / VII', 'PPPK / IX', 'PPPK / X'
+                        ];
+                    @endphp
+
+                    @foreach($daftarGolongan as $gol)
+                        <option value="{{ $gol }}" {{ request('golongan') == $gol ? 'selected' : '' }}>
+                            {{ $gol }}
+                        </option>
                     @endforeach
                 </select>
             </div>
@@ -146,9 +158,15 @@
                     <div>
                         <label class="text-[10px] uppercase font-bold text-blue-200 mb-1 block">Golongan</label>
                         <select name="golongan" required class="w-full bg-black/40 border border-white/20 rounded-xl p-3 text-sm text-white focus:ring-2 focus:ring-blue-500">
+                            <option value="">-- Pilih Golongan --</option>
+                            <option value="I/a">I/a</option>
+                            <option value="I/b">I/b</option>
+                            <option value="I/c">I/c</option>
+                            <option value="I/d">I/d</option>
                             <option value="II/a">II/a</option>
                             <option value="II/b">II/b</option>
                             <option value="II/c">II/c</option>
+                            <option value="II/d">II/d</option>
                             <option value="III/a">III/a</option>
                             <option value="III/b">III/b</option>
                             <option value="III/c">III/c</option>
@@ -156,6 +174,13 @@
                             <option value="IV/a">IV/a</option>
                             <option value="IV/b">IV/b</option>
                             <option value="IV/c">IV/c</option>
+                            <option value="IV/d">IV/d</option>
+                            <option value="IV/e">IV/e</option>
+                            <option value="IV/e">PPPK / V</option>
+                            <option value="IV/e">PPPK / VI</option>
+                            <option value="IV/e">PPPK / VII</option>
+                            <option value="IV/e">PPPK / IX</option>
+                            <option value="IV/e">PPPK / X</option>
                         </select>
                     </div>
                 </div>
@@ -227,7 +252,7 @@
                     <div>
                         <label class="text-[10px] font-bold text-blue-200 uppercase">Golongan</label>
                         <select name="golongan" id="edit_golongan" class="w-full bg-black/40 border border-white/20 rounded-xl p-3 text-sm text-white">
-                            @foreach(['II/a','II/b','II/c','III/a','III/b','III/c','III/d','IV/a','IV/b','IV/c'] as $gol)
+                            @foreach(['II/a','II/b','II/c','III/a','III/b','III/c','III/d','IV/a','IV/b','IV/c', 'PPPK / V', 'PPPK / VI', 'PPPK / VII', 'PPPK / IX', 'PPPK / X'] as $gol)
                                 <option value="{{ $gol }}">{{ $gol }}</option>
                             @endforeach
                         </select>
