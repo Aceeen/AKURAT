@@ -242,19 +242,31 @@ class KinerjaController extends Controller
 
     public function hapusBerkas($id)
     {
-        $berkas = BerkasKinerja::with('penilaian')->findOrFail($id);
+        $berkas = BerkasKinerja::findOrFail($id);
 
         // 1. Keamanan: Pastikan yang menghapus adalah pemiliknya
         if ($berkas->user_id !== auth()->id()) {
             abort(403, 'Anda hanya bisa menghapus berkas milik sendiri.');
         }
 
-        // 2. Aturan Bisnis: Jika sudah dinilai, tidak boleh dihapus
-        if ($berkas->penilaian) {
-            return back()->with('error', 'Berkas sudah dinilai dan tidak dapat dihapus.');
+        // 2. Aturan Bisnis: Cek apakah ada penilaian terkait tupoksi ini untuk user dan triwulan yang sama
+        // Karena penilaian sekarang terhubung ke kriteria, bukan ke berkas
+        $tupoksi = $berkas->tupoksi;
+        if ($tupoksi) {
+            $adaPenilaian = \App\Models\Penilaian::whereHas('kriteria', function($q) use ($tupoksi) {
+                $q->where('tupoksi_id', $tupoksi->id);
+            })
+            ->where('user_id', $berkas->user_id)
+            ->where('triwulan', $berkas->triwulan)
+            ->where('tahun', $berkas->tahun)
+            ->exists();
+
+            if ($adaPenilaian) {
+                return back()->with('error', 'Tupoksi ini sudah dinilai, Anda tidak dapat menghapus berkas.');
+            }
         }
         
-        // 3. Cek Locking System (Opsional tapi disarankan)
+        // 3. Cek Locking System
         $isLocked = DB::table('settings')->where('key', 'lock_t'.$berkas->triwulan)->where('value', '1')->exists();
         if ($isLocked) {
             return back()->with('error', 'Periode triwulan ini sudah dikunci, Anda tidak bisa menghapus berkas.');
@@ -264,9 +276,16 @@ class KinerjaController extends Controller
         try {
             $path = $berkas->file_path;
             $berkasId = $berkas->id;
+            
+            // 4. Hapus File Fisik dari Storage terlebih dahulu
+            if (Storage::disk('public')->exists($path)) {
+                Storage::disk('public')->delete($path);
+            }
+
+            // 5. Hapus record dari database
             $berkas->delete();
 
-            // --- TAMBAHKAN LOG ---
+            // 6. Tambahkan Log
             ActivityLog::create([
                 'user_id' => auth()->id(),
                 'action' => 'DELETE_BERKAS',
@@ -276,13 +295,8 @@ class KinerjaController extends Controller
                 'ip_address' => request()->ip()
             ]);
 
-        // 4. Hapus File Fisik dari Storage
-        if (Storage::disk('public')->exists($path)) {
-            Storage::disk('public')->delete($path);
-        }
-
-        DB::commit();
-        return back()->with('success', 'Berkas berhasil dihapus.');
+            DB::commit();
+            return back()->with('success', 'Berkas berhasil dihapus.');
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error("Error hapusBerkas: " . $e->getMessage());
