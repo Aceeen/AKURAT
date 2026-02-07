@@ -8,6 +8,7 @@ use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
@@ -66,6 +67,57 @@ class UserController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Gagal menambah pegawai: ' . $e->getMessage());
+        }
+    }
+
+    public function update(Request $request, $id)
+    {
+        if (auth()->user()->role !== 'kadis') { abort(403); }
+
+        $user = User::findOrFail($id);
+
+        // Validasi input
+        $request->validate([
+            'nama' => 'required|string|max:255',
+            // NIP harus unik kecuali untuk user yang sedang diedit ini sendiri
+            'nip' => ['required', 'string', Rule::unique('users')->ignore($user->id)],
+            'jabatan' => 'required|string',
+            'golongan' => 'required|string',
+            'unit_id' => 'required|exists:unit_kerja,id',
+            'role' => 'required|in:kadis,kabag,kasie,staff',
+            'parent_id' => 'nullable|exists:users,id',
+            'is_active' => 'required|boolean',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $user->update([
+                'nama' => $request->nama,
+                'nip' => $request->nip,
+                'jabatan' => $request->jabatan,
+                'golongan' => $request->golongan,
+                'unit_id' => $request->unit_id,
+                'role' => $request->role,
+                'parent_id' => $request->parent_id,
+                'is_active' => $request->is_active,
+            ]);
+
+            // Catat ke Log Aktivitas
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'UPDATE_USER',
+                'subject_table' => 'users',
+                'subject_id' => $user->id,
+                'description' => "Memperbarui data pegawai: {$user->nama} (NIP: {$user->nip})",
+                'ip_address' => $request->ip()
+            ]);
+
+            DB::commit();
+            return back()->with('success', 'Data pegawai berhasil diperbarui.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Gagal memperbarui data: ' . $e->getMessage());
         }
     }
 }

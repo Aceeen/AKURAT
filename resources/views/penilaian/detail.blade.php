@@ -3,15 +3,19 @@
 @section('content')
 <div class="container-fluid text-white">
     <!-- Header: Profil & Skor -->
-    <div class="flex flex-row items-center justify-between mb-10 gap-6 flex-nowrap overflow-x-auto pb-4">
+    <div class="flex flex-col lg:flex-row items-center justify-between mb-10 gap-6 flex-nowrap overflow-x-auto pb-4">
         <!-- Info Pegawai (Kiri) -->
-        <div class="flex items-center gap-4 min-w-max">
+        <div class="flex items-center gap-4 min-w-0 flex-1">
             <div class="w-16 h-16 glass-strong p-1 shrink-0">
                 <img src="https://ui-avatars.com/api/?name={{ urlencode($pegawai->nama) }}&background=3b82f6&color=fff" class="w-full h-full rounded-xl">
             </div>
-            <div class="shrink-0">
-                <h1 class="text-2xl font-bold tracking-tight">{{ $pegawai->nama }}</h1>
-                <p class="text-blue-200 text-sm font-medium opacity-80">NIP. {{ $pegawai->nip }} | {{ $pegawai->jabatan }}</p>
+            <div class="min-w-0 flex-1">
+                <h1 class="text-2xl font-bold tracking-tight text-white truncate lg:whitespace-normal">{{ $pegawai->nama }}</h1>
+                <p class="text-blue-200 text-sm font-medium opacity-80 whitespace-normal break-words leading-relaxed mt-1">
+                    <span class="inline-block"><i class="fas fa-id-card mr-1"></i> NIP. {{ $pegawai->nip }}</span>
+                    <span class="mx-1 hidden md:inline">|</span>
+                    <span class="inline-block text-blue-100"><i class="fas fa-briefcase mr-1"></i> {{ $pegawai->jabatan }}</span>
+                </p>
             </div>
         </div>
         

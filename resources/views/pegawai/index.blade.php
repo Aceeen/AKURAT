@@ -9,8 +9,7 @@
                 <i class="fas fa-filter mr-2"></i> Filter Pencarian
             </button>
             <button onclick="openModalPegawai()" class="btn-primary px-6 py-2.5 rounded-lg text-sm font-bold flex items-center transition">
-            <i class="fas fa-plus mr-2"></i> Tambah pegawai baru
-            </button>
+                <i class="fas fa-plus mr-2"></i> Tambah pegawai baru
         </div>
     </div>
 
@@ -54,7 +53,8 @@
                         @endif
                     </td>
                     <td class="px-6 py-4 text-center">
-                        <button class="text-blue-300 hover:text-blue-100 transition">
+                        <button onclick="openModalEditPegawai({{ json_encode($p) }})" 
+                                class="text-blue-300 hover:text-white transition p-2 bg-white/5 rounded-lg border border-white/10">
                             <i class="fas fa-edit"></i>
                         </button>
                     </td>
@@ -146,6 +146,83 @@
     </div>
 </div>
 
+<!-- Modal Edit Pegawai -->
+<div id="modalEditPegawai" class="fixed inset-0 bg-black/70 backdrop-blur-md hidden z-[110] items-center justify-center p-4 text-left">
+    <div class="glass-strong w-full max-w-2xl p-8 border border-white/30">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-bold text-white uppercase">Edit Data Pegawai</h3>
+            <button onclick="closeModalEditPegawai()" class="text-white/50 hover:text-white"><i class="fas fa-times"></i></button>
+        </div>
+
+        <form id="formEditPegawai" method="POST">
+            @csrf
+            @method('PUT')
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-[10px] font-bold text-blue-200 uppercase">Nama Lengkap</label>
+                        <input type="text" name="nama" id="edit_nama" required class="w-full bg-black/40 border border-white/20 rounded-xl p-3 text-sm text-white">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-blue-200 uppercase">NIP</label>
+                        <input type="text" name="nip" id="edit_nip" required class="w-full bg-black/40 border border-white/20 rounded-xl p-3 text-sm text-white">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-blue-200 uppercase">Jabatan</label>
+                        <input type="text" name="jabatan" id="edit_jabatan" required class="w-full bg-black/40 border border-white/20 rounded-xl p-3 text-sm text-white">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-blue-200 uppercase">Golongan</label>
+                        <select name="golongan" id="edit_golongan" class="w-full bg-black/40 border border-white/20 rounded-xl p-3 text-sm text-white">
+                            @foreach(['II/a','II/b','II/c','III/a','III/b','III/c','III/d','IV/a','IV/b','IV/c'] as $gol)
+                                <option value="{{ $gol }}">{{ $gol }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-[10px] font-bold text-blue-200 uppercase">Unit Kerja</label>
+                        <select name="unit_id" id="edit_unit_id" class="w-full bg-black/40 border border-white/20 rounded-xl p-3 text-sm text-white">
+                            @foreach($units as $u)
+                                <option value="{{ $u->id }}">{{ $u->nama_unit }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-blue-200 uppercase">Role</label>
+                        <select name="role" id="edit_role" class="w-full bg-black/40 border border-white/20 rounded-xl p-3 text-sm text-white">
+                            <option value="staff">Staff</option>
+                            <option value="kasie">Kepala Seksi</option>
+                            <option value="kabag">Kepala Bidang</option>
+                            <option value="kadis">Kepala Dinas</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-blue-200 uppercase">Status Akun</label>
+                        <select name="is_active" id="edit_is_active" class="w-full bg-black/40 border border-white/20 rounded-xl p-3 text-sm text-white">
+                            <option value="1">Aktif</option>
+                            <option value="0">Non-Aktif</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-blue-200 uppercase">Atasan Langsung</label>
+                        <select name="parent_id" id="edit_parent_id" class="w-full bg-black/40 border border-white/20 rounded-xl p-3 text-sm text-white">
+                            <option value="">-- Tanpa Atasan --</option>
+                            @foreach($atasans as $a)
+                                <option value="{{ $a->id }}">{{ $a->nama }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="w-full btn-primary py-4 rounded-xl font-bold text-xs uppercase mt-6 tracking-widest shadow-lg">
+                Simpan Perubahan
+            </button>
+        </form>
+    </div>
+</div>
+
 <script>
     function openModalPegawai() {
         const m = document.getElementById('modalPegawai');
@@ -156,6 +233,45 @@
         const m = document.getElementById('modalPegawai');
         m.classList.add('hidden');
         m.classList.remove('flex');
+    }
+    function openModalEditPegawai(user) {
+        // 1. Ambil elemen form
+        const form = document.getElementById('formEditPegawai');
+        
+        // 2. Set action form secara dinamis
+        // Gunakan template literal (backtick) untuk memasukkan ID
+        form.action = `/pegawai/update/${user.id}`;
+
+        // 3. Isi data ke dalam input
+        document.getElementById('edit_nama').value = user.nama;
+        document.getElementById('edit_nip').value = user.nip;
+        document.getElementById('edit_jabatan').value = user.jabatan;
+        document.getElementById('edit_golongan').value = user.golongan;
+        document.getElementById('edit_unit_id').value = user.unit_id;
+        document.getElementById('edit_role').value = user.role;
+        
+        // Status Akun (is_active biasanya 0/1 atau true/false di database)
+        document.getElementById('edit_is_active').value = user.is_active ? "1" : "0";
+        
+        // Atasan Langsung
+        document.getElementById('edit_parent_id').value = user.parent_id || "";
+
+        // 4. Tampilkan modal
+        const m = document.getElementById('modalEditPegawai');
+        m.classList.remove('hidden');
+        m.classList.add('flex');
+    }
+
+    function closeModalEditPegawai() {
+        const m = document.getElementById('modalEditPegawai');
+        m.classList.add('hidden');
+        m.classList.remove('flex');
+    }
+
+    // Klik luar modal untuk tutup
+    window.onclick = function(event) {
+        if (event.target.id == 'modalPegawai') closeModalPegawai();
+        if (event.target.id == 'modalEditPegawai') closeModalEditPegawai();
     }
 </script>
 @endsection
