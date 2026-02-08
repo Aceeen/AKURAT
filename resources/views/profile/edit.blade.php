@@ -22,16 +22,21 @@
                         <div class="flex flex-col items-center space-y-4">
                             <div class="w-32 h-32 glass-card p-1 relative group">
                                 @if(auth()->user()->avatar)
-                                    <img src="{{ asset('storage/' . auth()->user()->avatar) }}" class="w-full h-full object-cover rounded-xl shadow-2xl">
+                                    <img id="profile-preview" src="{{ asset('storage/' . auth()->user()->avatar) }}" class="w-full h-full object-cover rounded-xl shadow-2xl">
                                 @else
-                                    <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->nama) }}&background=3b82f6&color=fff" class="w-full h-full rounded-xl">
+                                    <img id="profile-preview" src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->nama) }}&background=3b82f6&color=fff" class="w-full h-full rounded-xl">
                                 @endif
                                 <label for="avatar" class="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer rounded-xl">
                                     <i class="fas fa-camera text-white"></i>
                                 </label>
                             </div>
-                            <p class="text-[10px] text-blue-300 uppercase font-black">Klik foto untuk ganti</p>
-                            <input type="file" name="avatar" id="avatar" class="hidden" accept="image/*">
+                            <div class="text-center">
+                                <p class="text-[10px] text-blue-300 uppercase font-black">Klik foto untuk ganti</p>
+                                <p class="text-[9px] text-blue-300 italic mt-1 leading-tight">
+                                    Rekomendasi: Foto formal<br>dengan rasio persegi (1:1)
+                                </p>
+                                <input type="file" name="avatar" id="avatar" class="hidden" accept="image/*" onchange="previewImage(this)">
+                            </div>
                         </div>
 
                         <!-- Input Teks -->
@@ -93,4 +98,25 @@
         </div>
     </div>
 </div>
+    <script>
+        function previewImage(input) {
+            const preview = document.getElementById('profile-preview');
+            const file = input.files[0];
+
+            if (file) {
+                if (!file.type.startsWith('image/')) {
+                    alert('Tolong pilih file gambar (JPG, PNG, JPEG)');
+                    input.value = '';
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
+@endsection
 @endsection
