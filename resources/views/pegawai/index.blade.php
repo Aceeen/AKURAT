@@ -318,7 +318,7 @@
         
         // 2. Set action form secara dinamis
         // Gunakan template literal (backtick) untuk memasukkan ID
-        form.action = `/pegawai/update/${user.id}`;
+        form.action = `{{ url('/pegawai/update') }}/${user.id}`;
 
         // 3. Isi data ke dalam input
         document.getElementById('edit_nama').value = user.nama;

@@ -48,10 +48,25 @@ class KinerjaController extends Controller
             });
         }
 
-        // 3. Eksekusi dengan Eager Loading 'unitKerja' agar tidak boros query (N+1 fix)
-        $pegawai = $pegawaiQuery->with('unitKerja')->orderBy('nama', 'asc')->get();
+        // 3. Eksekusi dengan Eager Loading
+        $triwulanAktif = session('periode_pilihan', \DB::table('settings')->where('key', 'triwulan_aktif')->value('value') ?? 1);
+        $tahunAktif = DB::table('settings')->where('key', 'tahun_aktif')->value('value') ?? date('Y');
 
-        return view('penilaian.index', compact('pegawai'));
+        $pegawai = $pegawaiQuery->with([
+            'unitKerja',
+            'tupoksis' => function($q) use ($tahunAktif) {
+                $q->where('tahun', $tahunAktif);
+            },
+            'tupoksis.kriteria' => function($q) use ($triwulanAktif) {
+                $q->where('t'.$triwulanAktif, true);
+            },
+            'tupoksis.kriteria.penilaian' => function($q) use ($triwulanAktif, $tahunAktif) {
+                $q->where('triwulan', $triwulanAktif)
+                  ->where('tahun', $tahunAktif);
+            }
+        ])->orderBy('nama', 'asc')->get();
+
+        return view('penilaian.index', compact('pegawai', 'triwulanAktif', 'tahunAktif'));
     }
 
     /**

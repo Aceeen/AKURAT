@@ -48,11 +48,27 @@
                         </span>
                     </td>
                     <td class="px-6 py-4 text-center">
-                        {{-- Logika Progress Sederhana --}}
+                        @php
+                            $totalKriteria = 0;
+                            $sudahDinilai = 0;
+                            foreach($p->tupoksis as $tupoksi) {
+                                foreach($tupoksi->kriteria as $k) {
+                                    $totalKriteria++;
+                                    if ($k->penilaian->where('user_id', $p->id)->count() > 0) {
+                                        $sudahDinilai++;
+                                    }
+                                }
+                            }
+                            $persentase = $totalKriteria > 0 ? round(($sudahDinilai / $totalKriteria) * 100) : 0;
+                            $semuaDinilai = ($totalKriteria > 0 && $sudahDinilai === $totalKriteria);
+                        @endphp
+                        
                         <div class="w-full bg-white/10 rounded-full h-1.5 mb-1">
-                            <div class="bg-blue-400 h-1.5 rounded-full" style="width: 45%"></div>
+                            <div class="{{ $semuaDinilai ? 'bg-green-400' : 'bg-blue-400' }} h-1.5 rounded-full" style="width: {{ $persentase }}%"></div>
                         </div>
-                        <span class="text-[9px] text-blue-200 font-bold uppercase">Menunggu Penilaian</span>
+                        <span class="text-[9px] {{ $semuaDinilai ? 'text-green-300' : 'text-blue-200' }} font-bold uppercase">
+                            {{ $semuaDinilai ? 'SUDAH DINILAI' : ($totalKriteria === 0 ? 'Belum Ada Kriteria' : 'Menunggu Penilaian') }}
+                        </span>
                     </td>
                     <td class="px-6 py-4 text-right">
                         <a href="{{ route('penilaian.detail', $p->id) }}" class="btn-primary px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition">

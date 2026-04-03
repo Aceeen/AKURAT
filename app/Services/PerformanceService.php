@@ -57,9 +57,9 @@ class PerformanceService
     public function getPredikat($skor)
     {
         // Ambil ambang batas dari settings agar dinamis
-        $sangatBaik = DB::table('settings')->where('key', 'skor_sangat_baik')->value('value') ?? 90;
-        $baik = DB::table('settings')->where('key', 'skor_baik')->value('value') ?? 76;
-        $cukup = DB::table('settings')->where('key', 'skor_cukup')->value('value') ?? 60;
+        $sangatBaik = DB::table('settings')->where('key', 'skor_sangat_baik')->value('value') ?? 81;
+        $baik = DB::table('settings')->where('key', 'skor_baik')->value('value') ?? 70;
+        $cukup = DB::table('settings')->where('key', 'skor_cukup')->value('value') ?? 0;
 
         if ($skor >= $sangatBaik) return "Sangat Baik";
         if ($skor >= $baik) return "Baik";
