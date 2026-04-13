@@ -42,8 +42,9 @@ Route::middleware(['auth', 'active', 'verified'])->group(function () {
         // Rute Modifikasi Data (WAJIB TERKUNCI oleh Middleware 'lock')
         Route::middleware(['lock'])->group(function () {
             Route::post('/upload', [KinerjaController::class, 'storeUpload'])->name('upload.store');
-            Route::delete('/berkas/{id}', [KinerjaController::class, 'hapusBerkas'])->name('berkas.destroy');
         });
+        // hapusBerkas memiliki pengecekan lock internal, jadi dilepas dari middleware 'lock' agar pengecekan 403 ownership tidak tertimpa error 400 parameter triwulan
+        Route::delete('/berkas/{id}', [KinerjaController::class, 'hapusBerkas'])->name('berkas.destroy');
     });
 
     // --- FITUR PENILAIAN (ATASAN: KADIS, KABAG, KASIE) ---

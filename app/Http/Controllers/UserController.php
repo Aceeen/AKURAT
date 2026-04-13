@@ -22,7 +22,8 @@ class UserController extends Controller
         // 2. Logika Filter Pencarian Nama/NIP
         if ($request->filled('search')) {
             $query->where(function($q) use ($request) {
-                $q->where('nama', 'ilike', '%' . $request->search . '%') // ilike untuk PostgreSQL agar case-insensitive
+                // Menggunakan DB::raw LOWER untuk cross-database compatibility
+                $q->whereRaw('LOWER(nama) LIKE ?', ['%' . strtolower($request->search) . '%'])
                 ->orWhere('nip', 'like', '%' . $request->search . '%');
             });
         }

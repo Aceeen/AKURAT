@@ -1,0 +1,11 @@
+1. Predikat changed from
+    Sangat Baik: 90 - 100
+    Baik: 76 - 89
+    Cukup: 60 - 75
+    Kurang / Tidak Memenuhi: Below 60
+
+    to
+
+    Sangat Baik: 81 - 100
+    Baik: 70 - 80
+    Cukup: 0 - 69

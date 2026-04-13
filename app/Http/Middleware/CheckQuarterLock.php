@@ -13,7 +13,13 @@ class CheckQuarterLock
     {
         // Deteksi triwulan dari input atau route
         $triwulan = $request->triwulan ?? $request->route('triwulan');
-        if (!$triwulan) return $next($request);
+        if (!$triwulan) {
+            $msg = "Parameter periode tidak ditemukan sehingga keamanan periode gagal divalidasi.";
+            if ($request->expectsJson()) {
+                return response()->json(['message' => $msg], 400);
+            }
+            return back()->with('error', $msg);
+        }
 
         // Ambil data dengan 1 Query efisien
         $settings = \DB::table('settings')->whereIn('key', [

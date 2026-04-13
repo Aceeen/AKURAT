@@ -42,8 +42,8 @@ class KinerjaController extends Controller
         // 2. Tambahkan Filter Search Global (Menghidupkan Fitur di Header)
         if ($request->filled('search')) {
             $pegawaiQuery->where(function($q) use ($request) {
-                // Menggunakan ilike untuk PostgreSQL (Case Insensitive)
-                $q->where('nama', 'ilike', '%' . $request->search . '%')
+                // Menggunakan DB::raw LOWER untuk cross-database compatibility (termasuk SQLite di test)
+                $q->whereRaw('LOWER(nama) LIKE ?', ['%' . strtolower($request->search) . '%'])
                 ->orWhere('nip', 'like', '%' . $request->search . '%');
             });
         }
@@ -165,6 +165,12 @@ class KinerjaController extends Controller
         $triwulanAktif = session('periode_pilihan', ceil(date('n') / 3));
         $tahunAktif    = DB::table('settings')->where('key', 'tahun_aktif')->value('value') ?? date('Y');
 
+        // Cek lock manual untuk mencegah atasan menilai di luar periode (TC-43)
+        $isLocked = DB::table('settings')->where('key', 'lock_t'.$triwulanAktif)->where('value', '1')->exists();
+        if (auth()->user()->role !== 'kadis' && $isLocked) {
+            return back()->with('error', 'Periode penilaian ini sudah dikunci, Anda tidak bisa menyimpan penilaian.');
+        }
+
         DB::beginTransaction();
         try {
             /**
@@ -236,7 +242,7 @@ class KinerjaController extends Controller
         
         DB::beginTransaction();
         try {
-            $tahun = date('Y');
+            $tahun = DB::table('settings')->where('key', 'tahun_aktif')->value('value') ?? date('Y');
             $folder = "berkas-kinerja/{$tahun}/T{$request->triwulan}";
 
             $file = $request->file('file_bukti');
@@ -504,7 +510,7 @@ class KinerjaController extends Controller
             abort(403);
         }
 
-        $tupoksi = Tupoksi::with('kriteria')->findOrFail($id);
+        $tupoksi = Tupoksi::with(['kriteria', 'berkasKinerja'])->findOrFail($id);
 
         DB::beginTransaction();
         try {
@@ -518,8 +524,7 @@ class KinerjaController extends Controller
 
             // 3. Hapus semua berkas yang terhubung dengan Tupoksi ini
             // (Opsional: Hapus file fisik di storage jika perlu)
-            $berkas = BerkasKinerja::where('tupoksi_id', $id)->get();
-            foreach ($berkas as $b) {
+            foreach ($tupoksi->berkasKinerja as $b) {
                 if (Storage::disk('public')->exists($b->file_path)) {
                     Storage::disk('public')->delete($b->file_path);
                 }

@@ -1,0 +1,645 @@
+{
+  "info": {
+    "name": "Akurat API (Web Routes)",
+    "description": "Postman tests for the Akurat web application",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "email",
+                  "value": "admin@example.com",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "password",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/logout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "logout"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "User Management (Kadis)",
+      "item": [
+        {
+          "name": "Get Pegawai List",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/pegawai?search=&unit_id=&golongan=&role=&status=aktif",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "pegawai"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": ""
+                },
+                {
+                  "key": "unit_id",
+                  "value": ""
+                },
+                {
+                  "key": "golongan",
+                  "value": ""
+                },
+                {
+                  "key": "role",
+                  "value": ""
+                },
+                {
+                  "key": "status",
+                  "value": "aktif"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Store Pegawai",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "nama",
+                  "value": "John Doe",
+                  "type": "text"
+                },
+                {
+                  "key": "nip",
+                  "value": "199001012020121001",
+                  "type": "text"
+                },
+                {
+                  "key": "jabatan",
+                  "value": "Staff IT",
+                  "type": "text"
+                },
+                {
+                  "key": "golongan",
+                  "value": "III/a",
+                  "type": "text"
+                },
+                {
+                  "key": "unit_id",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "role",
+                  "value": "staff",
+                  "type": "text"
+                },
+                {
+                  "key": "parent_id",
+                  "value": "2",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/pegawai/store",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "pegawai",
+                "store"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Pegawai",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "nama",
+                  "value": "John Doe Updated",
+                  "type": "text"
+                },
+                {
+                  "key": "nip",
+                  "value": "199001012020121001",
+                  "type": "text"
+                },
+                {
+                  "key": "jabatan",
+                  "value": "Senior Staff IT",
+                  "type": "text"
+                },
+                {
+                  "key": "golongan",
+                  "value": "III/b",
+                  "type": "text"
+                },
+                {
+                  "key": "unit_id",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "role",
+                  "value": "staff",
+                  "type": "text"
+                },
+                {
+                  "key": "parent_id",
+                  "value": "2",
+                  "type": "text"
+                },
+                {
+                  "key": "is_active",
+                  "value": "1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/pegawai/update/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "pegawai",
+                "update",
+                "1"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Kinerja & Berkas (Staff)",
+      "item": [
+        {
+          "name": "Get Daftar Berkas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/kinerja/berkas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "kinerja",
+                "berkas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Upload Berkas",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "tupoksi_id",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "triwulan",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "file_bukti",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/kinerja/upload",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "kinerja",
+                "upload"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Berkas",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/kinerja/berkas/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "kinerja",
+                "berkas",
+                "1"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Download Berkas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/kinerja/berkas/download/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "kinerja",
+                "berkas",
+                "download",
+                "1"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Penilaian (Atasan)",
+      "item": [
+        {
+          "name": "Daftar Penilaian Pegawai",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/penilaian?search=",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "penilaian"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Detail Penilaian Pegawai",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/penilaian/pegawai/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "penilaian",
+                "pegawai",
+                "1"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Simpan Penilaian",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "kriteria_id",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "pegawai_id",
+                  "value": "2",
+                  "type": "text"
+                },
+                {
+                  "key": "skor",
+                  "value": "3",
+                  "description": "0, 1, 2, or 3",
+                  "type": "text"
+                },
+                {
+                  "key": "catatan_atasan",
+                  "value": "Kerja bagus",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/penilaian/simpan",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "penilaian",
+                "simpan"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Manajemen Tupoksi & Kriteria (Kadis)",
+      "item": [
+        {
+          "name": "Store Tupoksi",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_id",
+                  "value": "2",
+                  "type": "text"
+                },
+                {
+                  "key": "nama_tupoksi",
+                  "value": "Penyusunan Anggaran",
+                  "type": "text"
+                },
+                {
+                  "key": "tahun",
+                  "value": "2026",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/tupoksi/store",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "tupoksi",
+                "store"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Hapus Tupoksi",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/tupoksi/hapus/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "tupoksi",
+                "hapus",
+                "1"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Store Kriteria",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "tupoksi_id",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "nama_kriteria",
+                  "value": "Kesesuaian dengan Pagu",
+                  "type": "text"
+                },
+                {
+                  "key": "keterangan",
+                  "value": "Dokumen anggaran sesuai standar pagu indikatif",
+                  "type": "text"
+                },
+                {
+                  "key": "t1",
+                  "value": "on",
+                  "type": "text"
+                },
+                {
+                  "key": "t2",
+                  "value": "on",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/kriteria/store",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "kriteria",
+                "store"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Kriteria",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "nama_kriteria",
+                  "value": "Kesesuaian dengan Pagu Revisi",
+                  "type": "text"
+                },
+                {
+                  "key": "keterangan",
+                  "value": "Dokumen harus terbaru",
+                  "type": "text"
+                },
+                {
+                  "key": "t1",
+                  "value": "on",
+                  "type": "text"
+                },
+                {
+                  "key": "t3",
+                  "value": "on",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/kriteria/update/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "kriteria",
+                "update",
+                "1"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Hapus Kriteria",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/kriteria/hapus/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "kriteria",
+                "hapus",
+                "1"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Settings (Batas Periode Aktif)",
+      "item": [
+        {
+          "name": "Set Periode",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "triwulan",
+                  "value": "2",
+                  "type": "text"
+                },
+                {
+                  "key": "tahun",
+                  "value": "2026",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/set-periode",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "set-periode"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Reset Periode",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reset-periode",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reset-periode"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

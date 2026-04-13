@@ -9,6 +9,16 @@ use Illuminate\Support\Facades\DB;
 
 class PerformanceService
 {
+    protected $settingsCache = array();
+
+    protected function getSetting($key, $default = null)
+    {
+        if (empty($this->settingsCache)) {
+            $this->settingsCache = DB::table('settings')->pluck('value', 'key')->toArray();
+        }
+        return $this->settingsCache[$key] ?? $default;
+    }
+
     public function hitungNilaiTriwulan(User $user, $triwulan, $tahun)
     {
         // 1. Ambil semua kriteria yang aktif untuk triwulan tersebut
@@ -21,20 +31,17 @@ class PerformanceService
 
         $skorDiperoleh = 0;
 
-        /**
-         * LOGIKA BARU:
-         * Kita langsung mencari skor di tabel 'penilaian' berdasarkan kriteria_id.
-         * Tidak lagi mencari lewat tabel berkas_kinerja.
-         */
-        foreach ($kriteria as $item) {
-            $penilaian = Penilaian::where('kriteria_id', $item->id)
+        // Fix N+1 queries by fetching all criteria assessments in one query (TC-37)
+        $penilaians = Penilaian::whereIn('kriteria_id', $kriteria->pluck('id'))
                 ->where('user_id', $user->id)
                 ->where('triwulan', $triwulan)
                 ->where('tahun', $tahun)
-                ->first();
+                ->get()
+                ->keyBy('kriteria_id');
 
-            if ($penilaian) {
-                $skorDiperoleh += (int) $penilaian->skor;
+        foreach ($kriteria as $item) {
+            if (isset($penilaians[$item->id])) {
+                $skorDiperoleh += (int) $penilaians[$item->id]->skor;
             }
         }
 
@@ -56,10 +63,10 @@ class PerformanceService
 
     public function getPredikat($skor)
     {
-        // Ambil ambang batas dari settings agar dinamis
-        $sangatBaik = DB::table('settings')->where('key', 'skor_sangat_baik')->value('value') ?? 81;
-        $baik = DB::table('settings')->where('key', 'skor_baik')->value('value') ?? 70;
-        $cukup = DB::table('settings')->where('key', 'skor_cukup')->value('value') ?? 0;
+        // Ambil ambang batas dari cache config agar tidak query berulang (TC-37)
+        $sangatBaik = $this->getSetting('skor_sangat_baik', 81);
+        $baik = $this->getSetting('skor_baik', 70);
+        $cukup = $this->getSetting('skor_cukup', 0);
 
         if ($skor >= $sangatBaik) return "Sangat Baik";
         if ($skor >= $baik) return "Baik";
