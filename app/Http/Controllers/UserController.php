@@ -153,4 +153,39 @@ class UserController extends Controller
             return back()->with('error', 'Gagal memperbarui data: ' . $e->getMessage());
         }
     }
+
+    public function destroy(Request $request, $id)
+    {
+        if (auth()->user()->role !== 'kadis') { abort(403); }
+
+        $user = User::findOrFail($id);
+
+        if ($user->id === auth()->id()) {
+            return back()->with('error', 'Anda tidak dapat menghapus akun Anda sendiri.');
+        }
+
+        DB::beginTransaction();
+        try {
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'DELETE_USER',
+                'subject_table' => 'users',
+                'subject_id' => $user->id,
+                'description' => "Menghapus data pegawai: {$user->nama} (NIP: {$user->nip})",
+                'ip_address' => $request->ip()
+            ]);
+
+            $user->delete();
+
+            DB::commit();
+            return back()->with('success', 'Data pegawai berhasil dihapus.');
+
+        } catch (\Illuminate\Database\QueryException $e) {
+            DB::rollBack();
+            return back()->with('error', 'Gagal menghapus pegawai karena masih memiliki data terkait (Tupoksi/Bawahan/Penilaian).');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Gagal menghapus data: ' . $e->getMessage());
+        }
+    }
 }

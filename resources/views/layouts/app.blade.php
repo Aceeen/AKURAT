@@ -327,7 +327,7 @@
                 @endif
                 @if(session('error'))
                     <div class="glass-card bg-red-500/20 border-red-400/50 p-3 text-xs mb-4 text-red-100">
-                        <i class="fas fa-exclamation-triangle mr-2"></i> {{ session('error') }}
+                        <i class="fas fa-exclamation-triangle mr-2"></i> {!! session('error') !!}
                     </div>
                 @endif
             </div>

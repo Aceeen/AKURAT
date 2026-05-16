@@ -118,10 +118,19 @@
                         @endif
                     </td>
                     <td class="px-6 py-4 text-center">
-                        <button onclick="openModalEditPegawai({{ json_encode($p) }})" 
-                                class="text-blue-300 hover:text-white transition p-2 bg-white/5 rounded-lg border border-white/10">
-                            <i class="fas fa-edit"></i>
-                        </button>
+                        <div class="flex justify-center gap-2">
+                            <button onclick="openModalEditPegawai({{ json_encode($p) }})" 
+                                    class="text-blue-300 hover:text-white transition p-2 bg-white/5 rounded-lg border border-white/10" title="Edit Pegawai">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <form action="{{ route('pegawai.destroy', $p->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data pegawai ini? Tindakan ini tidak dapat dibatalkan.');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="text-red-400 hover:text-white transition p-2 bg-red-500/10 hover:bg-red-500/30 rounded-lg border border-red-500/20" title="Hapus Pegawai">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
                 @endforeach

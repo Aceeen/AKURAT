@@ -17,7 +17,7 @@ services:
     environment:
       POSTGRES_DB: db_akurat
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password_rahasia # Ganti dengan password kuat
+      POSTGRES_PASSWORD: dinkesmanado2026
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
@@ -42,7 +42,7 @@ services:
     container_name: akurat_tunnel
     restart: always
     environment:
-      - TUNNEL_TOKEN=MASUKKAN_TOKEN_DARI_CLOUDFLARE_DI_SINI
+      - TUNNEL_TOKEN=eyJhIjoiMmZjZWYwNTQzNmUyNDczNGMxYzVlM2VhM2U1YzFhMDciLCJ0IjoiZmU2YWIwOWMtMWNjMC00NTRkLWFjM2UtMDMzMzhlNDdhMjA1IiwicyI6Ik1EVTBPVEppTm1JdFlURTRNQzAwWkRabExUaGtNMk10WldGbE5UbGpaV00xWVdFMFkySmlZMkkyTkRFdFlqRXpNaTAwTnpKaUxXSTJaakV0WmpReE1EY3pZMkV6WldVMyJ9
     command: tunnel run
     networks:
       - akurat_net

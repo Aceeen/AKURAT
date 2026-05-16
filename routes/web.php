@@ -66,6 +66,12 @@ Route::middleware(['auth', 'active', 'verified'])->group(function () {
         Route::get('/pegawai', [UserController::class, 'index'])->name('pegawai.index');
         Route::post('/pegawai/store', [UserController::class, 'store'])->name('pegawai.store');
         Route::put('/pegawai/update/{id}', [UserController::class, 'update'])->name('pegawai.update');
+        Route::delete('/pegawai/hapus/{id}', [UserController::class, 'destroy'])->name('pegawai.destroy');
+
+        // --- UNIT KERJA (CRUD oleh Kadis)
+        Route::post('/unit-kerja/store', [UnitKerjaController::class, 'store'])->name('unit-kerja.store');
+        Route::put('/unit-kerja/update/{id}', [UnitKerjaController::class, 'update'])->name('unit-kerja.update');
+        Route::delete('/unit-kerja/hapus/{id}', [UnitKerjaController::class, 'destroy'])->name('unit-kerja.destroy');
 
         // Rute Manajemen Tupoksi
         Route::post('/tupoksi/store', [KinerjaController::class, 'storeTupoksi'])->name('tupoksi.store');
